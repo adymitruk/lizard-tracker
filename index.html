@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Common Wall Lizard Tracker - Vancouver</title>
+    <title>Common Wall Lizard Tracker - Vancouver 🦎</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
     <style>
         :root {
@@ -153,23 +153,12 @@
 
         .popup-content img {
             width: 100%;
-            height: auto;
+            max-height: 400px;
+            object-fit: contain;
+            background: #fff;
+            border-radius: 4px;
             display: block;
-            border-radius: 0;
-            margin: 0;
-        }
-        .popup-content strong, 
-        .popup-content div,
-        .popup-content br {
-            padding: 5px 10px;
-            display: block;
-        }
-        .popup-content br {
-            margin: 0;
-            padding: 0;
-            content: "";
-            display: block;
-            height: 0;
+            margin: 10px 0;
         }
         #loading {
             position: absolute;
@@ -274,12 +263,12 @@
                 
                 const [lat, lng] = sighting.location.split(',');
                 
-                let popupHtml = `<strong>Date:</strong> ${sighting.observed_on || 'Unknown'}<br>`;
+                let popupHtml = `<div class="popup-content"><strong>Date:</strong> ${sighting.observed_on || 'Unknown'}`;
                 if (sighting.photos && sighting.photos.length > 0) {
-                    // Use medium url for popup
-                    const photoUrl = sighting.photos[0].url.replace('square', 'medium');
-                    popupHtml += `<img src="${photoUrl}" alt="Lizard photo" />`;
+                    const photoUrl = sighting.photos[0].url;
+                    popupHtml += `<br><img src="${photoUrl}" alt="Lizard photo" />`;
                 }
+                popupHtml += `</div>`;
                 
                 const marker = L.marker([lat, lng]).bindPopup(popupHtml);
                 
