@@ -502,19 +502,23 @@
                 // Extract coordinates based on data source
                 let lat, lng;
                 
-                if (sighting.observations && sighting.observations[0]) {
-                    // iNaturalist format: coordinates in location string
-                    if (sighting.location) {
-                        let loc = sighting.location.split(',').map(parseFloat);
-                        lat = loc[0];
-                        lng = loc[1];
-                    } else if (sighting.latitude && sighting.longitude) {
-                        lat = sighting.latitude;
-                        lng = sighting.longitude;
-                    }
+                // Always try location string first (iNaturalist API format)
+                if (sighting.location) {
+                    let loc = sighting.location.split(',').map(parseFloat);
+                    lat = loc[0];
+                    lng = loc[1];
+                } else if (sighting.latitude && sighting.longitude) {
+                    // Fallback to lat/lng fields
+                    lat = sighting.latitude;
+                    lng = sighting.longitude;
+                } else if (sighting.lat !== undefined && sighting.lng !== undefined) {
+                    // Fallback to lat/lng from parsed data or manual sightings
+                    lat = sighting.lat;
+                    lng = sighting.lng;
+                }
                 
                 if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
-                    console.warn('Invalid coordinates for sighting:', sighting.id || index, sighting);
+                    console.warn('Invalid coordinates for sighting:', sighting.id || index, 'location:', sighting.location);
                     return;
                 }
                 
@@ -593,16 +597,17 @@
                     
                     // Extract coordinates based on data source
                     let lat, lng;
+                    // Always try location string first (iNaturalist API format)
                     if (sighting.location) {
                         let loc = sighting.location.split(',').map(parseFloat);
                         lat = loc[0];
                         lng = loc[1];
-                    } else if (sighting.observations && sighting.observations[0]) {
-                        lat = sighting.latitude || sighting.observations[0].latitude;
-                        lng = sighting.longitude || sighting.observations[0].longitude;
-                    } else {
-                        lat = sighting.lat || sighting.latitude;
-                        lng = sighting.lng || sighting.longitude;
+                    } else if (sighting.latitude && sighting.longitude) {
+                        lat = sighting.latitude;
+                        lng = sighting.longitude;
+                    } else if (sighting.lat !== undefined && sighting.lng !== undefined) {
+                        lat = sighting.lat;
+                        lng = sighting.lng;
                     }
                     
                     if (lat && lng) {
