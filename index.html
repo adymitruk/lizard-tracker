@@ -129,11 +129,9 @@
         }
 
         .sighting-thumb {
-            width: 30vh;
-            height: 30vw;
-            min-width: 0;
-            max-height: 30vh;
-            max-width: 30vw;
+            width: 150px;
+            height: 150px;
+            flex-shrink: 0;
             object-fit: contain;
             border-radius: 4px;
             background: #eee;
@@ -155,11 +153,9 @@
         }
 
         .popup-content img {
-            width: 30vh;
-            height: 30vw;
-            min-width: 0;
-            max-height: 30vh;
-            max-width: 30vw;
+            width: 100%;
+            max-width: 900px;
+            max-height: 700px;
             object-fit: contain;
             background: #fff;
             border-radius: 4px;
@@ -276,7 +272,7 @@
                 }
                 popupHtml += `</div>`;
                 
-                const marker = L.marker([lat, lng]).bindPopup(popupHtml);
+                const marker = L.marker([lat, lng]).bindPopup(popupHtml, { minWidth: 600, maxWidth: 900 });
                 
                 marker.on('click', () => {
                     highlightListItem(index);
