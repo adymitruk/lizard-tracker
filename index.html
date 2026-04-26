@@ -496,10 +496,10 @@
                 // Extract coordinates based on data source
                 let lat, lng;
                 
-                if (sighting.latitude !== undefined) {
-                    // iNaturalist format: coordinates at top level
-                    lat = sighting.latitude;
-                    lng = sighting.longitude;
+                if (sighting.observations && sighting.observations[0]) {
+                    // iNaturalist format: coordinates nested in observations array
+                    lat = sighting.observations[0].latitude;
+                    lng = sighting.observations[0].longitude;
                 } else if (sighting.lat !== undefined) {
                     // Manual or default sightings
                     lat = sighting.lat;
@@ -590,9 +590,9 @@
                     
                     // Extract coordinates based on data source
                     let lat, lng;
-                    if (sighting.latitude !== undefined) {
-                        lat = sighting.latitude;
-                        lng = sighting.longitude;
+                    if (sighting.observations && sighting.observations[0]) {
+                        lat = sighting.observations[0].latitude;
+                        lng = sighting.observations[0].longitude;
                     } else {
                         lat = sighting.lat || sighting.latitude;
                         lng = sighting.lng || sighting.longitude;
