@@ -151,24 +151,26 @@
             color: #666;
         }
 
-        .popup-content {
-            padding: 0;
-            overflow: hidden;
-        }
         .popup-content img {
             width: 100%;
             height: auto;
             display: block;
             border-radius: 0;
+            margin: 0;
         }
         .popup-content strong, 
-        .popup-content br,
-        .popup-content text,
-        .popup-content div {
+        .popup-content div,
+        .popup-content br {
             padding: 5px 10px;
             display: block;
         }
-        
+        .popup-content br {
+            margin: 0;
+            padding: 0;
+            content: "";
+            display: block;
+            height: 0;
+        }
         #loading {
             position: absolute;
             top: 50%;
