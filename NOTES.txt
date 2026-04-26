@@ -1,0 +1,46 @@
+# Staged App Status
+
+**Date:** April 26, 2026
+
+## Deployment Verification
+
+### URL
+- Staging: https://apps.dymitruk.com/staging/lizard-tracker/
+
+### Status: ✅ VERIFIED
+
+The staged app correctly displays **both data sources together**:
+
+1. **iNaturalist Sightings**: 36 recent observations from iNaturalist API (taxon_id: 55990)
+2. **Default Sightings**: 5 pre-loaded research-based sightings from BC research
+
+### Total Sightings Displayed
+- **41 total sightings** shown on the map
+
+### Toggle Functionality
+- Checkbox "Show Default Sightings" (checked by default) allows users to:
+  - Toggle the 5 default sightings on/off
+  - Compare iNaturalist-only vs combined data
+
+### Code Verification (index.html)
+- Lines 388-440: `DEFAULT_SIGHTINGS` array contains all 5 research sightings
+- Lines 491-493: `renderMarkers()` adds defaults when toggle is checked
+- Lines 554-556: `renderList()` adds defaults when toggle is checked
+- Line 584: Default sightings marked with "(Default Data)" label
+
+### Default Sightings (NOT on iNaturalist)
+From Engelstoft et al. 2020 research:
+1. Powell River (2015) - First mainland confirmed population
+2. Delta (2015) - First mainland confirmed population  
+3. Vedder Crossing/Chilliwack (2015) - First mainland confirmed population
+4. Saanich Peninsula (historical, 1967-1970 introduction)
+5. Sidney, Vancouver Island (2022 sighting)
+
+### Current Map View
+The app displays 36 iNaturalist sightings clustered around Fraser Valley/Chilliwack area (lat: 49.148, lng: -122.966), plus the 5 default sightings throughout Vancouver region.
+
+### Visual Verification
+The sidebar shows all 41 items in the list, with default sightings marked by "(Default Data)" tag. Map markers show both data sources simultaneously.
+
+---
+**File:** `/home/adam/repos/public/lizard-tracker/NOTES.txt`
