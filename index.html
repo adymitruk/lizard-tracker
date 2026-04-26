@@ -493,19 +493,19 @@
             }
             
             allData.forEach((sighting, index) => {
-                // Extract coordinates differently based on data source
+                // Extract coordinates based on data source
                 let lat, lng;
                 
-                if (sighting.observations && sighting.observations[0]) {
-                    // iNaturalist format: coordinates nested in observations array
-                    lat = sighting.observations[0].latitude;
-                    lng = sighting.observations[0].longitude;
-                } else if (sighting.lat !== undefined || sighting.lat !== null) {
+                if (sighting.latitude !== undefined) {
+                    // iNaturalist format: coordinates at top level
+                    lat = sighting.latitude;
+                    lng = sighting.longitude;
+                } else if (sighting.lat !== undefined) {
                     // Manual or default sightings
                     lat = sighting.lat;
                     lng = sighting.lng;
                 } else {
-                    // Fallback for other formats
+                    // Fallback
                     lat = sighting.latitude;
                     lng = sighting.longitude;
                 }
@@ -562,19 +562,17 @@
                 
                 // Extract photo URL based on data source
                 let thumbUrl = '';
-                if (sighting.observations && sighting.observations[0] && sighting.observations[0].photos && sighting.observations[0].photos[0]) {
-                    // iNaturalist format
-                    thumbUrl = sighting.observations[0].photos[0].url;
-                } else if (sighting.photo) {
-                    // Manual or default sightings
+                if (sighting.photo) {
                     thumbUrl = sighting.photo;
+                } else if (sighting.observations && sighting.observations[0] && sighting.observations[0].photos && sighting.observations[0].photos[0]) {
+                    thumbUrl = sighting.observations[0].photos[0].url;
                 }
                 
                 // Extract date based on data source
-                const dateStr = sighting.date || (sighting.observations && sighting.observations[0] ? sighting.observations[0].observed_on : sighting.observed_on) || 'Unknown Date';
+                const dateStr = sighting.date || sighting.observed_on || 'Unknown Date';
                 
                 // Extract location based on data source
-                const placeStr = sighting.location || (sighting.observations && sighting.observations[0] ? sighting.observations[0].place_guess : sighting.place_guess) || 'Vancouver';
+                const placeStr = sighting.location || sighting.place_guess || 'Vancouver';
                 const notesStr = sighting.notes || '';
                 
                 li.innerHTML = `
@@ -592,9 +590,9 @@
                     
                     // Extract coordinates based on data source
                     let lat, lng;
-                    if (sighting.observations && sighting.observations[0]) {
-                        lat = sighting.observations[0].latitude;
-                        lng = sighting.observations[0].longitude;
+                    if (sighting.latitude !== undefined) {
+                        lat = sighting.latitude;
+                        lng = sighting.longitude;
                     } else {
                         lat = sighting.lat || sighting.latitude;
                         lng = sighting.lng || sighting.longitude;
