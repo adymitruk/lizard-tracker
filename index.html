@@ -151,12 +151,21 @@
             color: #666;
         }
 
+        .popup-content {
+            padding: 0;
+            overflow: hidden;
+        }
         .popup-content img {
-            width: auto;
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 4px;
-            margin-top: 5px;
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 0;
+        }
+        .popup-content strong, 
+        .popup-content br,
+        .popup-content text,
+        .popup-content div {
+            padding: 5px 10px;
             display: block;
         }
         
