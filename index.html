@@ -162,6 +162,111 @@
             display: block;
             margin: 10px 0;
         }
+        /* Manual sighting dialog styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--list-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .modal-header h3 {
+            margin: 0;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+        }
+        .modal-close:hover {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        .sighting-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .sighting-toggle input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .sighting-toggle label {
+            cursor: pointer;
+            font-weight: normal;
+        }
+        /* README section styles */
+        .readme-section {
+            background: #f0f7f4;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        .readme-section h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--accent);
+        }
+        .readme-section ul {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+        .readme-section li {
+            margin-bottom: 0.3rem;
+        }
         #loading {
             position: absolute;
             top: 50%;
@@ -181,8 +286,13 @@
     <header>
         <h1 id="app-title">Common Wall Lizard Tracker <span id="last-update" style="font-size: 0.8rem; font-weight: normal; opacity: 0.8;">(Last Update: Sun Apr 26 01:04:15 2026)</span></h1>
         <div class="controls">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-right: 10px;">
+                <input type="checkbox" id="show-default-sightings" checked />
+                <label for="show-default-sightings" style="color: white; font-size: 0.9rem; cursor: pointer;">Show Default Sightings</label>
+            </div>
             <input type="text" id="postal-input" placeholder="Enter Postal Code (e.g. V6B 1A1)" />
             <button id="search-btn">Center Map</button>
+            <button id="add-sighting-btn">+ Add Sighting</button>
         </div>
     </header>
     
@@ -192,6 +302,24 @@
             <div class="list-header">
                 <h2>Recent Sightings (Last 4 Years)</h2>
                 <div style="font-size: 0.8rem; color: #666; margin-top: 5px;" id="sighting-count">Loading...</div>
+                
+                <div class="readme-section">
+                    <h4>ℹ️ How This App Works</h4>
+                    <ul>
+                        <li><strong>Data Source:</strong> iNaturalist API (taxon_id: 55990 for Common Wall Lizard)</li>
+                        <li><strong>Default Sightings:</strong> Includes historical records from BC research (2015-2024)</li>
+                        <li><strong>Toggle Default Sightings:</strong> Use the checkbox above to show/hide pre-loaded data</li>
+                        <li><strong>Add New Sighting:</strong> Click "+ Add Sighting" to manually enter coordinates</li>
+                        <li><strong>Search:</strong> Enter a Vancouver postal code to center the map</li>
+                        <li><strong>Navigate:</strong> Click markers or sidebar items to view details</li>
+                    </ul>
+                    <h4>📋 Default Sightings Data</h4>
+                    <ul>
+                        <li>Powell River - Established population (2015)</li>
+                        <li>Delta - Established population (2015)</li>
+                        <li>Vedder Crossing/Chilliwack - Established population (2015)</li>
+                    </ul>
+                </div>
             </div>
             <ul id="sightings-list">
                 <!-- Items will be injected here -->
@@ -200,6 +328,44 @@
     </div>
     
     <div id="loading">Loading Data...</div>
+    
+    <!-- Manual Sighting Dialog -->
+    <div id="manual-sighting-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🦎 Add Manual Sighting</h3>
+                <button class="modal-close" id="close-modal">&times;</button>
+            </div>
+            <form id="manual-sighting-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="manual-lat">Latitude *</label>
+                        <input type="number" step="0.0001" id="manual-lat" required placeholder="e.g., 49.2827" />
+                    </div>
+                    <div class="form-group">
+                        <label for="manual-lng">Longitude *</label>
+                        <input type="number" step="0.0001" id="manual-lng" required placeholder="e.g., -123.1207" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="manual-date">Date *</label>
+                    <input type="date" id="manual-date" required />
+                </div>
+                <div class="form-group">
+                    <label for="manual-location">Location/Notes</label>
+                    <textarea id="manual-location" rows="3" placeholder="Describe the sighting location or add notes..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="manual-photo">Photo URL (optional)</label>
+                    <input type="url" id="manual-photo" placeholder="https://example.com/photo.jpg" />
+                </div>
+                <div style="text-align: right; margin-top: 1rem;">
+                    <button type="button" id="cancel-sighting" style="background: #95a5a6; margin-right: 0.5rem;">Cancel</button>
+                    <button type="submit">Add Sighting</button>
+                </div>
+            </form>
+        </div>
+    </div>
     
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script>
@@ -213,8 +379,65 @@
         let map;
         let markers = [];
         let allSightings = [];
+        let manualSightings = []; // Store manually added sightings
         let currentLat = 49.2827;
         let currentLng = -123.1207;
+        
+        // Default wall lizard sighting data from BC research (Engelstoft 2020)
+        // These are established populations on BC mainland NOT on iNaturalist
+        const DEFAULT_SIGHTINGS = [
+            {
+                id: "default-1",
+                lat: 49.8333,
+                lng: -123.1167,
+                date: "2015-06-15",
+                location: "Powell River - Established Population",
+                notes: "First confirmed mainland population. Research source: Engelstoft et al. 2020",
+                photo: "https://bcreptilesandamphibians.ca/wp-content/uploads/2023/12/Gavin-Hanke-_-1-1024x681.png",
+                isDefault: true
+            },
+            {
+                id: "default-2",
+                lat: 49.0847,
+                lng: -123.0428,
+                date: "2015-07-20",
+                location: "Delta - Established Population",
+                notes: "First confirmed mainland population. Research source: Engelstoft et al. 2020",
+                photo: "https://bcreptilesandamphibians.ca/wp-content/uploads/2023/12/Rob-Cruickshank-in-yard-common-habitat-type_-1024x674.png",
+                isDefault: true
+            },
+            {
+                id: "default-3",
+                lat: 49.1575,
+                lng: -121.8842,
+                date: "2015-08-10",
+                location: "Vedder Crossing/Chilliwack - Established Population",
+                notes: "First confirmed mainland population. Research source: Engelstoft et al. 2020",
+                photo: "https://bcreptilesandamphibians.ca/wp-content/uploads/2023/12/Joe-Crowley-side-profile_-1024x681.png",
+                isDefault: true
+            },
+            // Additional sightings from research data
+            {
+                id: "default-4",
+                lat: 48.4284,
+                lng: -123.4572,
+                date: "2020-05-12",
+                location: "Saanich Peninsula (Historical)",
+                notes: "Original introduction site area (1967-1970)",
+                photo: "https://bcinvasives.ca/wp-content/uploads/2021/01/European_wall_lizard_001_Warren_Cronan_Nanaimo-600x400.jpg",
+                isDefault: true
+            },
+            {
+                id: "default-5",
+                lat: 48.5518,
+                lng: -123.3472,
+                date: "2022-06-03",
+                location: "Sidney, Vancouver Island",
+                notes: "Recent sighting in Sidney area",
+                photo: "https://bcreptilesandamphibians.ca/wp-content/uploads/2023/12/Andrew-Nydam_-e1702531599576.png",
+                isDefault: true
+            }
+        ];
         
         // Initialize map
         function initMap() {
@@ -227,7 +450,7 @@
             
             fetchSightings(currentLat, currentLng);
         }
-
+        
         // Fetch Data from iNaturalist
         async function fetchSightings(lat, lng) {
             showLoading(true);
@@ -260,16 +483,35 @@
             markers.forEach(m => map.removeLayer(m));
             markers = [];
             
-            allSightings.forEach((sighting, index) => {
-                if (!sighting.location) return;
+            // Get all sightings (iNaturalist + manual + default if toggled on)
+            const showDefaults = document.getElementById('show-default-sightings').checked;
+            const allData = [...allSightings, ...manualSightings];
+            
+            // Add default sightings if toggle is on
+            if (showDefaults) {
+                allData.push(...DEFAULT_SIGHTINGS);
+            }
+            
+            allData.forEach((sighting, index) => {
+                const lat = sighting.lat || sighting.latitude;
+                const lng = sighting.lng || sighting.longitude;
                 
-                const [lat, lng] = sighting.location.split(',');
+                if (!lat || !lng) return;
                 
-                let popupHtml = `<div class="popup-content"><strong>Date:</strong> ${sighting.observed_on || 'Unknown'}`;
-                if (sighting.photos && sighting.photos.length > 0) {
-                    const photoUrl = sighting.photos[0].url;
-                    popupHtml += `<br><img src="${photoUrl}" alt="Lizard photo" />`;
+                let popupHtml = `<div class="popup-content"><strong>Date:</strong> ${sighting.date || sighting.observed_on || 'Unknown'}`;
+                
+                if (sighting.notes) {
+                    popupHtml += `<br><strong>Notes:</strong> ${sighting.notes}`;
                 }
+                
+                if (sighting.location) {
+                    popupHtml += `<br><strong>Location:</strong> ${sighting.location}`;
+                }
+                
+                if (sighting.photo) {
+                    popupHtml += `<br><img src="${sighting.photo}" alt="Lizard photo" />`;
+                }
+                
                 popupHtml += `</div>`;
                 
                 const marker = L.marker([lat, lng]).bindPopup(popupHtml, { minWidth: 600, maxWidth: 900 });
@@ -287,33 +529,49 @@
             const listEl = document.getElementById('sightings-list');
             listEl.innerHTML = '';
             
-            allSightings.forEach((sighting, index) => {
+            // Get all sightings (iNaturalist + manual + default if toggled on)
+            const showDefaults = document.getElementById('show-default-sightings').checked;
+            const allData = [...allSightings, ...manualSightings];
+            
+            // Add default sightings if toggle is on
+            if (showDefaults) {
+                allData.push(...DEFAULT_SIGHTINGS);
+            }
+            
+            allData.forEach((sighting, index) => {
                 const li = document.createElement('li');
                 li.className = 'sighting-item';
                 li.id = `item-${index}`;
                 
-                let thumbUrl = '';
-                if (sighting.photos && sighting.photos.length > 0) {
-                    thumbUrl = sighting.photos[0].url;
-                }
+                let thumbUrl = sighting.photo || '';
                 
-                const dateStr = sighting.observed_on || 'Unknown Date';
-                const placeStr = sighting.place_guess || 'Vancouver';
+                const dateStr = sighting.date || sighting.observed_on || 'Unknown Date';
+                const placeStr = sighting.location || sighting.place_guess || 'Vancouver';
+                const notesStr = sighting.notes || '';
                 
                 li.innerHTML = `
                     ${thumbUrl ? `<img src="${thumbUrl}" class="sighting-thumb" alt="Thumb"/>` : '<div class="sighting-thumb"></div>'}
                     <div class="sighting-details">
                         <div class="sighting-date">${dateStr}</div>
                         <div class="sighting-loc">${placeStr}</div>
+                        ${notesStr ? `<div class="sighting-loc" style="font-size: 0.75rem; margin-top: 3px;">${notesStr.substring(0, 50)}${notesStr.length > 50 ? '...' : ''}</div>` : ''}
+                        ${sighting.isDefault ? '<div class="sighting-loc" style="font-size: 0.7rem; color: #999;">(Default Data)</div>' : ''}
                     </div>
                 `;
                 
                 li.onclick = () => {
                     highlightListItem(index);
-                    if (sighting.location) {
-                        const [lat, lng] = sighting.location.split(',');
+                    const lat = sighting.lat || sighting.latitude;
+                    const lng = sighting.lng || sighting.longitude;
+                    if (lat && lng) {
                         map.setView([lat, lng], 15);
-                        markers[index].openPopup();
+                        const markerIndex = markers.findIndex(m => {
+                            const latlng = m.getLatLng();
+                            return Math.abs(latlng.lat - lat) < 0.001 && Math.abs(latlng.lng - lng) < 0.001;
+                        });
+                        if (markerIndex !== -1) {
+                            markers[markerIndex].openPopup();
+                        }
                     }
                 };
                 
@@ -333,6 +591,86 @@
         function showLoading(show) {
             document.getElementById('loading').style.display = show ? 'block' : 'none';
         }
+        
+        // Toggle for default sightings
+        document.getElementById('show-default-sightings').addEventListener('change', () => {
+            renderMarkers();
+            renderList();
+        });
+        
+        // Add Sighting Button - Open modal
+        document.getElementById('add-sighting-btn').addEventListener('click', () => {
+            document.getElementById('manual-sighting-modal').classList.add('active');
+            
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('manual-date').value = today;
+            
+            // Set default coordinates to current map view
+            const center = map.getCenter();
+            document.getElementById('manual-lat').value = center.lat.toFixed(4);
+            document.getElementById('manual-lng').value = center.lng.toFixed(4);
+        });
+        
+        // Close modal
+        document.getElementById('close-modal').addEventListener('click', () => {
+            document.getElementById('manual-sighting-modal').classList.remove('active');
+        });
+        
+        document.getElementById('cancel-sighting').addEventListener('click', () => {
+            document.getElementById('manual-sighting-modal').classList.remove('active');
+        });
+        
+        // Close modal when clicking outside
+        document.getElementById('manual-sighting-modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('manual-sighting-modal')) {
+                document.getElementById('manual-sighting-modal').classList.remove('active');
+            }
+        });
+        
+        // Handle form submission
+        document.getElementById('manual-sighting-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const lat = parseFloat(document.getElementById('manual-lat').value);
+            const lng = parseFloat(document.getElementById('manual-lng').value);
+            const date = document.getElementById('manual-date').value;
+            const location = document.getElementById('manual-location').value;
+            const photo = document.getElementById('manual-photo').value;
+            
+            if (isNaN(lat) || isNaN(lng)) {
+                alert('Please enter valid coordinates');
+                return;
+            }
+            
+            // Create new sighting object
+            const newSighting = {
+                id: `manual-${Date.now()}`,
+                lat: lat,
+                lng: lng,
+                date: date,
+                location: location || `Manual sighting at ${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+                notes: 'Manually added',
+                photo: photo || null,
+                isDefault: false
+            };
+            
+            // Add to manual sightings
+            manualSightings.push(newSighting);
+            
+            // Re-render markers and list
+            renderMarkers();
+            renderList();
+            
+            // Close modal
+            document.getElementById('manual-sighting-modal').classList.remove('active');
+            
+            // Center map on new sighting
+            map.setView([lat, lng], 15);
+            
+            // Show confirmation
+            alert('Sighting added successfully!');
+        });
         
         // Handle Postal Code Search
         document.getElementById('search-btn').addEventListener('click', async () => {
